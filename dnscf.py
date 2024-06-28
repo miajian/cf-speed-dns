@@ -5,14 +5,12 @@ import os
 import json
 
 # API 密钥
-CF_API_TOKEN    =   os.environ["CF_API_TOKEN"]
-CF_ZONE_ID      =   os.environ["CF_ZONE_ID"]
-CF_DNS_NAME     =   os.environ["CF_DNS_NAME"]
+CF_API_TOKEN = os.environ["CF_API_TOKEN"]
+CF_ZONE_ID = os.environ["CF_ZONE_ID"]
+CF_DNS_NAME = os.environ["CF_DNS_NAME"]
 
 # pushplus_token
-PUSHPLUS_TOKEN  =   os.environ["PUSHPLUS_TOKEN"]
-
-
+PUSHPLUS_TOKEN = os.environ["PUSHPLUS_TOKEN"]
 
 headers = {
     'Authorization': f'Bearer {CF_API_TOKEN}',
@@ -53,16 +51,21 @@ def update_dns_record(record_id, name, cf_ip):
     data = {
         'type': 'A',
         'name': name,
-        'content': cf_ip
+        'content': cf_ip,
+        'ttl': 300  # TTL 设置为5分钟（300秒）
     }
 
-    response = requests.put(url, headers=headers, json=data)
-
-    if response.status_code == 200:
-        print(f"cf_dns_change success: ---- Time: " + str(
-            time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())) + " ---- ip：" + str(cf_ip))
-        return "ip:" + str(cf_ip) + "解析" + str(name) + "成功"
-    else:
+    try:
+        response = requests.put(url, headers=headers, json=data)
+        if response.status_code == 200:
+            print(f"cf_dns_change success: ---- Time: " + str(
+                time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())) + " ---- ip：" + str(cf_ip))
+            return "ip:" + str(cf_ip) + "解析" + str(name) + "成功"
+        else:
+            print(f"cf_dns_change ERROR: ---- Time: " + str(
+                time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())) + " ---- MESSAGE: " + response.text)
+            return "ip:" + str(cf_ip) + "解析" + str(name) + "失败"
+    except Exception as e:
         traceback.print_exc()
         print(f"cf_dns_change ERROR: ---- Time: " + str(
             time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())) + " ---- MESSAGE: " + str(e))
